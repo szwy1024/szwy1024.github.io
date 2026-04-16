@@ -1,7 +1,728 @@
 <!DOCTYPE html>
-<html>
-  <body>
-    <h1>Hello World</h1>
-    <p>这是我的第一个 GitHub Pages 网站</p>
-  </body>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Avery | Compiler Engineer & HPC Geek</title>
+<style>
+/* ==================== RESET & BASE ==================== */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --cyan: #00f0ff;
+  --purple: #b347ea;
+  --green: #00ff9d;
+  --bg: #0a0a0f;
+  --card-bg: rgba(255,255,255,0.04);
+  --card-border: rgba(255,255,255,0.08);
+  --text: #e0e0e0;
+  --text-dim: #888;
+}
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Segoe UI', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* ==================== LOADING SCREEN ==================== */
+#loader {
+  position: fixed; inset: 0; z-index: 9999;
+  background: #000;
+  transition: opacity 0.8s ease;
+}
+#loader.fade-out { opacity: 0; pointer-events: none; }
+#loader-canvas { width: 100%; height: 100%; }
+
+/* ==================== PARTICLE BACKGROUND ==================== */
+#particles-canvas {
+  position: fixed; inset: 0; z-index: 0;
+  pointer-events: none;
+}
+
+/* ==================== MAIN CONTENT ==================== */
+.main-content {
+  position: relative; z-index: 1;
+  opacity: 0;
+  transition: opacity 0.6s ease 0.3s;
+}
+.main-content.show { opacity: 1; }
+
+section {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 80px 24px;
+}
+
+/* ==================== SECTION TITLES ==================== */
+.section-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 48px;
+  text-align: center;
+  position: relative;
+  background: linear-gradient(90deg, var(--cyan), var(--purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.section-title::after {
+  content: '';
+  display: block;
+  width: 60px; height: 3px;
+  margin: 12px auto 0;
+  background: linear-gradient(90deg, var(--cyan), var(--purple));
+  border-radius: 2px;
+}
+
+/* ==================== HERO ==================== */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding-top: 60px;
+}
+
+/* Avatar */
+.avatar-wrapper {
+  position: relative;
+  width: 160px; height: 160px;
+  margin-bottom: 32px;
+}
+.avatar-glow {
+  position: absolute; inset: -8px;
+  border-radius: 50%;
+  background: conic-gradient(var(--cyan), var(--purple), var(--green), var(--cyan));
+  animation: avatar-spin 4s linear infinite;
+  filter: blur(6px);
+  opacity: 0.7;
+}
+@keyframes avatar-spin {
+  to { transform: rotate(360deg); }
+}
+.avatar-pulse {
+  position: absolute; inset: -16px;
+  border-radius: 50%;
+  box-shadow: 0 0 30px var(--cyan), 0 0 60px rgba(0,240,255,0.3);
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+.avatar-img {
+  position: relative;
+  width: 160px; height: 160px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--bg);
+  z-index: 1;
+  transition: transform 0.3s;
+}
+.avatar-wrapper:hover .avatar-img {
+  animation: glitch 0.4s steps(2) infinite;
+}
+@keyframes glitch {
+  0% { transform: translate(0); filter: hue-rotate(0deg); }
+  25% { transform: translate(-3px, 2px); filter: hue-rotate(90deg); }
+  50% { transform: translate(3px, -2px); filter: hue-rotate(180deg); }
+  75% { transform: translate(-2px, -3px); filter: hue-rotate(270deg); }
+  100% { transform: translate(0); filter: hue-rotate(360deg); }
+}
+
+/* Console typewriter */
+.console-box {
+  background: rgba(0,0,0,0.6);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 24px 32px;
+  max-width: 620px;
+  width: 100%;
+  text-align: left;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  font-size: 0.95rem;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 40px rgba(0,240,255,0.05);
+}
+.console-bar {
+  display: flex; gap: 6px;
+  margin-bottom: 16px;
+}
+.console-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+}
+.console-dot:nth-child(1) { background: #ff5f57; }
+.console-dot:nth-child(2) { background: #febc2e; }
+.console-dot:nth-child(3) { background: #28c840; }
+#typewriter-output {
+  min-height: 120px;
+  white-space: pre-wrap;
+  color: var(--green);
+}
+.cursor {
+  display: inline-block;
+  width: 8px;
+  background: var(--green);
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ==================== GLASSMORPHISM CARDS ==================== */
+.glass-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 28px;
+  backdrop-filter: blur(12px);
+  transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.glass-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: 16px;
+  padding: 1px;
+  background: linear-gradient(135deg, transparent 40%, var(--cyan) 50%, var(--purple) 60%, transparent 70%);
+  background-size: 300% 300%;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.4s;
+  animation: border-flow 3s linear infinite paused;
+}
+.glass-card:hover::before {
+  opacity: 1;
+  animation-play-state: running;
+}
+@keyframes border-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.glass-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 8px 40px rgba(0,240,255,0.12), 0 0 20px rgba(179,71,234,0.08);
+}
+
+/* ==================== TECH STACK ==================== */
+.tech-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+.tech-category-title {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--cyan);
+  margin-bottom: 16px;
+}
+.tech-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.tech-tag {
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.03);
+  transition: all 0.3s;
+  cursor: default;
+}
+.tech-tag:hover {
+  border-color: var(--cyan);
+  box-shadow: 0 0 12px rgba(0,240,255,0.3);
+  color: var(--cyan);
+  transform: scale(1.08);
+}
+.tech-tag.purple:hover {
+  border-color: var(--purple);
+  box-shadow: 0 0 12px rgba(179,71,234,0.3);
+  color: var(--purple);
+}
+.tech-tag.green:hover {
+  border-color: var(--green);
+  box-shadow: 0 0 12px rgba(0,255,157,0.3);
+  color: var(--green);
+}
+
+/* ==================== PROJECTS ==================== */
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+.project-card {
+  perspective: 800px;
+}
+.project-card .glass-card {
+  transform-style: preserve-3d;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+.project-icon {
+  font-size: 2rem;
+  margin-bottom: 12px;
+}
+.project-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #fff;
+}
+.project-desc {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  line-height: 1.7;
+}
+.project-tech-tags {
+  margin-top: 14px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.project-tech-tag {
+  font-size: 0.75rem;
+  padding: 3px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,240,255,0.2);
+  color: var(--cyan);
+  background: rgba(0,240,255,0.05);
+}
+
+/* ==================== MESSAGES ==================== */
+.messages-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 700px;
+  margin: 0 auto;
+}
+.msg-card {
+  padding: 24px 28px;
+}
+.msg-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.msg-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #fff;
+}
+.msg-date {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+.msg-body {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  line-height: 1.8;
+}
+.msg-tag {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 0.72rem;
+  padding: 2px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(179,71,234,0.3);
+  color: var(--purple);
+  background: rgba(179,71,234,0.06);
+}
+
+/* ==================== FOOTER ==================== */
+footer {
+  text-align: center;
+  padding: 40px 24px;
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  position: relative; z-index: 1;
+}
+footer a {
+  color: var(--cyan);
+  text-decoration: none;
+}
+footer a:hover { text-decoration: underline; }
+
+/* ==================== SCROLL REVEAL ==================== */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 600px) {
+  .console-box { padding: 16px 18px; font-size: 0.82rem; }
+  .avatar-wrapper { width: 120px; height: 120px; }
+  .avatar-img { width: 120px; height: 120px; }
+  section { padding: 60px 16px; }
+  .section-title { font-size: 1.5rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== LOADING SCREEN ==================== -->
+<div id="loader">
+  <canvas id="loader-canvas"></canvas>
+</div>
+
+<!-- ==================== PARTICLE BACKGROUND ==================== -->
+<canvas id="particles-canvas"></canvas>
+
+<!-- ==================== MAIN CONTENT ==================== -->
+<div class="main-content" id="main-content">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="avatar-wrapper reveal">
+      <div class="avatar-pulse"></div>
+      <div class="avatar-glow"></div>
+      <img class="avatar-img" src="https://github.com/szwy1024.png" alt="Avery">
+    </div>
+    <div class="console-box reveal" style="transition-delay:0.2s">
+      <div class="console-bar">
+        <span class="console-dot"></span>
+        <span class="console-dot"></span>
+        <span class="console-dot"></span>
+      </div>
+      <div id="typewriter-output"></div>
+    </div>
+  </section>
+
+  <!-- TECH STACK -->
+  <section>
+    <h2 class="section-title reveal">Tech Stack</h2>
+    <div class="tech-grid">
+      <div class="glass-card reveal">
+        <div class="tech-category-title">底层 / 高性能</div>
+        <div class="tech-tags">
+          <span class="tech-tag">CUDA</span>
+          <span class="tech-tag">C++</span>
+          <span class="tech-tag">LLVM</span>
+          <span class="tech-tag">RISC-V</span>
+        </div>
+      </div>
+      <div class="glass-card reveal">
+        <div class="tech-category-title" style="color:var(--purple)">全栈开发</div>
+        <div class="tech-tags">
+          <span class="tech-tag purple">Vue 3</span>
+          <span class="tech-tag purple">FastAPI</span>
+          <span class="tech-tag purple">Docker</span>
+          <span class="tech-tag purple">MySQL</span>
+        </div>
+      </div>
+      <div class="glass-card reveal">
+        <div class="tech-category-title" style="color:var(--green)">理论基础</div>
+        <div class="tech-tags">
+          <span class="tech-tag green">计算复杂性理论</span>
+          <span class="tech-tag green">编译原理</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section>
+    <h2 class="section-title reveal">Featured Projects</h2>
+    <div class="projects-grid">
+      <div class="project-card reveal">
+        <div class="glass-card" data-tilt>
+          <div class="project-icon">⚙️</div>
+          <div class="project-title">SysY to RISC-V Compiler</div>
+          <div class="project-desc">参加全国大学生计算机系统能力大赛的硬核编译器项目，将 SysY 语言编译到 RISC-V 汇编，涵盖词法分析、语法分析、中间代码优化与目标代码生成全流程。</div>
+          <div class="project-tech-tags">
+            <span class="project-tech-tag">C++</span>
+            <span class="project-tech-tag">LLVM IR</span>
+            <span class="project-tech-tag">RISC-V</span>
+          </div>
+        </div>
+      </div>
+      <div class="project-card reveal">
+        <div class="glass-card" data-tilt>
+          <div class="project-icon">🧬</div>
+          <div class="project-title">3D Life Simulation (CUDA)</div>
+          <div class="project-desc">基于 CUDA 的三维生命游戏 GPU 并行模拟，完成了强扩展性与弱扩展性的性能分析，探索大规模并行计算的极限。</div>
+          <div class="project-tech-tags">
+            <span class="project-tech-tag">CUDA</span>
+            <span class="project-tech-tag">C++</span>
+            <span class="project-tech-tag">HPC</span>
+          </div>
+        </div>
+      </div>
+      <div class="project-card reveal">
+        <div class="glass-card" data-tilt>
+          <div class="project-icon">💬</div>
+          <div class="project-title">Real-time Classroom Interactive System</div>
+          <div class="project-desc">基于 WebSocket 的实时课堂互动系统，前端使用 Vue 3 构建，后端 FastAPI 提供 API，数据库采用 Docker 化部署的 MySQL。</div>
+          <div class="project-tech-tags">
+            <span class="project-tech-tag">Vue 3</span>
+            <span class="project-tech-tag">FastAPI</span>
+            <span class="project-tech-tag">WebSocket</span>
+            <span class="project-tech-tag">Docker</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MESSAGES -->
+  <section>
+    <h2 class="section-title reveal">Messages</h2>
+    <div class="messages-list">
+      <div class="glass-card msg-card reveal">
+        <div class="msg-header">
+          <span class="msg-title">编译器大赛复盘</span>
+          <span class="msg-date">2026-04-10</span>
+        </div>
+        <div class="msg-body">今年的系统能力大赛终于结束了。在寄存器分配阶段踩了不少坑，最终用图着色算法跑通了所有用例，性能排名比去年提升了不少。接下来准备把优化 Pass 整理成博客系列。</div>
+        <span class="msg-tag">编译器</span>
+      </div>
+      <div class="glass-card msg-card reveal">
+        <div class="msg-header">
+          <span class="msg-title">CUDA 并行优化心得</span>
+          <span class="msg-date">2026-03-22</span>
+        </div>
+        <div class="msg-body">尝试用 Shared Memory 优化 3D 生命游戏的 stencil 计算，在 A100 上跑出了接近理论峰值 80% 的带宽利用率。Warp Divergence 的优化效果比预期明显得多。</div>
+        <span class="msg-tag">HPC</span>
+      </div>
+      <div class="glass-card msg-card reveal">
+        <div class="msg-header">
+          <span class="msg-title">Vue 3 + WebSocket 踩坑记录</span>
+          <span class="msg-date">2026-03-05</span>
+        </div>
+        <div class="msg-body">课堂互动系统上线测试时发现 WebSocket 在弱网环境下频繁断连。最终通过心跳检测 + 指数退避重连策略解决了稳定性问题，同时加入了消息队列做缓冲。</div>
+        <span class="msg-tag">全栈</span>
+      </div>
+      <div class="glass-card msg-card reveal">
+        <div class="msg-header">
+          <span class="msg-title">Hello World!</span>
+          <span class="msg-date">2026-02-18</span>
+        </div>
+        <div class="msg-body">个人主页终于上线了！用纯 HTML/CSS/JS 手搓了整个页面，包括粒子背景、Matrix 加载动画和玻璃拟态卡片。以后会在这里记录技术笔记和项目进展。</div>
+        <span class="msg-tag">日常</span>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ==================== FOOTER ==================== -->
+<footer>
+  <p>© 2026 Avery · Built with passion & pure code · <a href="https://github.com/szwy1024" target="_blank">GitHub</a></p>
+</footer>
+
+<script>
+/* ==================== MATRIX LOADING ==================== */
+(function() {
+  const canvas = document.getElementById('loader-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%^&*(){}[]<>~;:=+-_/\\|';
+  const fontSize = 14;
+  const columns = Math.floor(canvas.width / fontSize);
+  const drops = Array(columns).fill(0).map(() => Math.random() * -50 | 0);
+
+  function drawMatrix() {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#00ff9d';
+    ctx.font = fontSize + 'px monospace';
+
+    for (let i = 0; i < columns; i++) {
+      const char = chars[Math.random() * chars.length | 0];
+      const x = i * fontSize;
+      const y = drops[i] * fontSize;
+      ctx.globalAlpha = Math.random() * 0.5 + 0.5;
+      ctx.fillText(char, x, y);
+      if (y > canvas.height && Math.random() > 0.975) {
+        drops[i] = 0;
+      }
+      drops[i]++;
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  const matrixInterval = setInterval(drawMatrix, 40);
+
+  setTimeout(() => {
+    clearInterval(matrixInterval);
+    document.getElementById('loader').classList.add('fade-out');
+    document.getElementById('main-content').classList.add('show');
+    setTimeout(() => {
+      document.getElementById('loader').remove();
+      startTypewriter();
+    }, 800);
+  }, 2800);
+})();
+
+/* ==================== PARTICLE BACKGROUND ==================== */
+(function() {
+  const canvas = document.getElementById('particles-canvas');
+  const ctx = canvas.getContext('2d');
+  let w, h, particles, mouse = { x: -1000, y: -1000 };
+
+  function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  document.addEventListener('mousemove', e => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+  });
+
+  const PARTICLE_COUNT = 80;
+  const MAX_DIST = 150;
+  const MOUSE_DIST = 200;
+
+  particles = Array.from({ length: PARTICLE_COUNT }, () => ({
+    x: Math.random() * w,
+    y: Math.random() * h,
+    vx: (Math.random() - 0.5) * 0.5,
+    vy: (Math.random() - 0.5) * 0.5,
+    r: Math.random() * 1.5 + 0.5,
+  }));
+
+  function animate() {
+    ctx.clearRect(0, 0, w, h);
+    for (const p of particles) {
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0) p.x = w;
+      if (p.x > w) p.x = 0;
+      if (p.y < 0) p.y = h;
+      if (p.y > h) p.y = 0;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0, 240, 255, 0.6)';
+      ctx.fill();
+    }
+
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < MAX_DIST) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = `rgba(0, 240, 255, ${0.15 * (1 - dist / MAX_DIST)})`;
+          ctx.stroke();
+        }
+      }
+      const mdx = particles[i].x - mouse.x;
+      const mdy = particles[i].y - mouse.y;
+      const mdist = Math.sqrt(mdx * mdx + mdy * mdy);
+      if (mdist < MOUSE_DIST) {
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(mouse.x, mouse.y);
+        ctx.strokeStyle = `rgba(179, 71, 234, ${0.3 * (1 - mdist / MOUSE_DIST)})`;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.lineWidth = 1;
+      }
+    }
+
+    requestAnimationFrame(animate);
+  }
+  animate();
+})();
+
+/* ==================== TYPEWRITER ==================== */
+function startTypewriter() {
+  const el = document.getElementById('typewriter-output');
+  const lines = [
+    '> const avery = {',
+    '    role: "Compiler Engineer / HPC Geek / Full-Stack Dev",',
+    '    passion: ["CUDA", "LLVM", "RISC-V", "Vue 3"],',
+    '    motto: "Turning code into art, one instruction at a time."',
+    '  };',
+    '',
+    '> console.log(avery.motto);',
+    '  "Turning code into art, one instruction at a time."',
+  ];
+
+  let lineIdx = 0, charIdx = 0;
+  let output = '';
+
+  function type() {
+    if (lineIdx >= lines.length) {
+      el.innerHTML = output + '<span class="cursor">&nbsp;</span>';
+      return;
+    }
+    const line = lines[lineIdx];
+    if (charIdx <= line.length) {
+      el.innerHTML = output + line.substring(0, charIdx) + '<span class="cursor">&nbsp;</span>';
+      charIdx++;
+      setTimeout(type, 30 + Math.random() * 20);
+    } else {
+      output += line + '\n';
+      lineIdx++;
+      charIdx = 0;
+      setTimeout(type, 100);
+    }
+  }
+  type();
+}
+
+/* ==================== 3D TILT ON PROJECT CARDS ==================== */
+document.querySelectorAll('[data-tilt]').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const rect = card.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    card.style.transform = `perspective(600px) rotateY(${x * 15}deg) rotateX(${-y * 15}deg) scale(1.03)`;
+    card.style.boxShadow = `${-x * 20}px ${y * 20}px 40px rgba(0,240,255,0.12)`;
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = '';
+    card.style.boxShadow = '';
+  });
+});
+
+/* ==================== SCROLL REVEAL ==================== */
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      const delay = entry.target.dataset.delay || 0;
+      setTimeout(() => entry.target.classList.add('visible'), delay);
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.reveal').forEach((el, i) => {
+  el.dataset.delay = (i % 5) * 100;
+  observer.observe(el);
+});
+</script>
+</body>
 </html>
